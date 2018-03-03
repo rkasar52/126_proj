@@ -1,0 +1,72 @@
+---
+title: "Untitled"
+author: "Rahul Kasar"
+date: "2/24/2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+dat = read.table('realestate.txt', header = T)
+head(dat)
+
+Price=dat$SalePrice
+Sq_feet=dat$SqFeet
+Beds=dat$Beds
+AC=dat$Air
+Garage=dat$Garage
+Pool=dat$Pool
+Year=dat$Year
+Quality=dat$Quality
+Style=dat$Style
+Lot=dat$Lot
+Highway=dat$Highway
+
+
+
+```
+
+
+Pairs Plot
+```{r}
+pairs(Price~Sq_feet+Beds+AC)
+
+##Seems to be positive correlation between square feet and price. No correlation between beds and price. AC seems to be a good predictor as well. 
+```
+
+```{r}
+pairs(Price~Garage+Pool+Year+Quality)
+##Garage and Quality seem like good linear predictors. Year needs to be transformed. Pool seems ot have negative relationship
+```
+
+```{r}
+pairs(Price~Style+Lot+Highway)
+##Style is not a good predictor. Highway is a good predictor. Lot size is a good preidctor, probably needs to be transformed. 
+```
+
+```{r}
+##fit price to square feet 
+
+fit=lm(Price~Sq_feet)
+
+plot(Sq_feet, Price ,xlab = 'Sq_feet', ylab = 'Price', main = 'Price vs Sq_Feet')
+abline(fit)
+s=summary(fit)
+s
+
+```
+
+Hypothesis Test to see if there is a relationship between Price and Sq_feet
+H0: B1=0    Ha: B1!=0
+Pvalue is less than .05 so we can reject the null hypothesis that B1=0. 
+```{r}
+mod.reduced = lm(Price ~ S + Examination + Infant.Mortality, data = swiss)
+mod.full = lm(Fertility ~., data = swiss)
+anova(mod.reduced, mod.full)
+
+```
