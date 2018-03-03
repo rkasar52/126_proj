@@ -18,6 +18,7 @@ head(dat)
 Price=dat$SalePrice
 Sq_feet=dat$SqFeet
 Beds=dat$Beds
+Baths=dat$Baths
 AC=dat$Air
 Garage=dat$Garage
 Pool=dat$Pool
@@ -62,11 +63,91 @@ s
 ```
 
 Hypothesis Test to see if there is a relationship between Price and Sq_feet
-H0: B1=0    Ha: B1!=0
+H0: B1=0=B3...B12=0    Ha: At least one of the Betas is not equal to 0. 
 Pvalue is less than .05 so we can reject the null hypothesis that B1=0. 
+
+
+
 ```{r}
-mod.reduced = lm(Price ~ S + Examination + Infant.Mortality, data = swiss)
-mod.full = lm(Fertility ~., data = swiss)
+Price=dat$SalePrice
+Sq_feet=dat$SqFeet
+Beds=dat$Beds
+AC=dat$Air
+Garage=dat$Garage
+Pool=dat$Pool
+Year=dat$Year
+Quality=dat$Quality
+Style=dat$Style
+Lot=dat$Lot
+Highway=dat$Highway
+
+mod.reduced = lm(Price ~ 1)
+mod.full = lm(Price ~Sq_feet + Beds + Baths + AC + Garage + Pool + 
+    Year + Quality + Style + Lot + Highway)
 anova(mod.reduced, mod.full)
 
 ```
+Pvalue is very close to 0 so we know that there is atleast one useful predictor.
+
+
+
+Do AIC test to see which predictors are useful in the model. 
+```{r}
+step(mod.reduced, scope = list(lower = mod.reduced, upper = mod.full))
+
+
+
+
+```
+AIC test shows that SQ_feet, quality, style, year, lot, garage, beds, highway, and AC, are the best predictors for our model.
+
+
+```{r}
+mod.AIC = lm(formula = Price ~ Sq_feet + Quality + Style + Year + Lot + 
+    Garage + Beds + Highway + AC)
+summary(mod.AIC)
+
+
+```
+All Beta values are significant except for Highway and AC as their pval are large.
+Conduct BIC test to see if similar results
+
+```{r}
+n = nrow(dat)
+step(mod.reduced, scope = list(lower = mod.reduced, upper = mod.full), k = log(n))
+
+
+
+```
+BIC results were widely different that the AIC tests as it only includes Sq_feet, Quality, Style, Year and Lot. 
+
+```{r}
+mod.BIC = lm(formula = Price ~ Sq_feet + Quality + Style + Year + Lot)
+summary(mod.BIC)
+
+```
+All these predictors are statistically significant
+
+
+Pairs plot to check for interaction
+```{r}
+pairs(Price ~ Sq_feet + Quality + Style + Year + Lot)
+
+```
+Pairs plot shows that there seems to be some interaction between Quality and Sq_feet and Year and Sq_feet.
+
+
+Hypothesis test to see if we should add interaction terms. 
+```{r}
+mod.reduced=lm(Price ~ Sq_feet + Quality + Style + Year + Lot)
+mod.full=(Price ~ Sq_feet + Quality + Style + Year + Lot + Sq_feet*Quality + Sq_feet*Year)
+
+anova1 <- anova(mod.reduced,mod.full)
+anova1
+
+
+```
+
+
+
+
