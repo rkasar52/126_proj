@@ -23,7 +23,8 @@ AC=dat$Air
 Garage=dat$Garage
 Pool=dat$Pool
 Year=dat$Year
-Quality=dat$Quality
+Q=dat$Quality
+Quality=factor(Q)
 Style=dat$Style
 Lot=dat$Lot
 Highway=dat$Highway
@@ -69,17 +70,7 @@ Pvalue is less than .05 so we can reject the null hypothesis that B1=0.
 
 
 ```{r}
-Price=dat$SalePrice
-Sq_feet=dat$SqFeet
-Beds=dat$Beds
-AC=dat$Air
-Garage=dat$Garage
-Pool=dat$Pool
-Year=dat$Year
-Quality=dat$Quality
-Style=dat$Style
-Lot=dat$Lot
-Highway=dat$Highway
+
 
 mod.reduced = lm(Price ~ 1)
 mod.full = lm(Price ~Sq_feet + Beds + Baths + AC + Garage + Pool + 
@@ -140,14 +131,73 @@ Pairs plot shows that there seems to be some interaction between Quality and Sq_
 Hypothesis test to see if we should add interaction terms. 
 ```{r}
 mod.reduced=lm(Price ~ Sq_feet + Quality + Style + Year + Lot)
-mod.full=(Price ~ Sq_feet + Quality + Style + Year + Lot + Sq_feet*Quality + Sq_feet*Year)
+mod.full=lm(Price ~ Sq_feet + Quality + Style + Year + Lot + Sq_feet*Quality+Sq_feet*Lot+Style*Year)
 
 anova1 <- anova(mod.reduced,mod.full)
 anova1
 
-
+step(mod.reduced, scope = list(lower = mod.reduced, upper = mod.full), k = log(n))
 ```
 
+BIC test shows that we need to add Interaction term between Sq_feet and quality and Style and Year. 
+
+```{r}
+##find adjusted r^2 to see which interaction term is better.
+model=lm(Price ~ Sq_feet + Quality + Style + Year + Lot + 
+    Sq_feet:Quality)
+s=summary(model)
+s$adj.r.squared
+model.1=model=lm(Price ~ Sq_feet + Quality + Style + Year + Lot + 
+    Style:Year)
+s=summary(model.1)
+s$adj.r.squared
+
+```
+Adjusted r^2 shows that interaction term between Sq_feet and Quality improves the model really well. Interaction term between Style and Year does not really improve the model 
+
+##adding interaction 
+```{r}
+model.f=(lm(Price ~ Sq_feet + Quality + Style + Year + Lot + 
+    Sq_feet:Quality))
+yhat=fitted(model.f)
+e=yhat-Price
+
+```
+Residual vs Fit.
+```{r}
+plot(yhat, e, xlab = 'Fitted Value', ylab = 'Residuals', main = 'Residuals vs Fitted Value')
+abline(h = 0, lty = 2)
+
+qqnorm(e)
+qqline(e)
+```
+Residuals vs fit and qq plot suggests that we need to transform the Y. 
+
+```{r}
+bc=boxcox(model.f,lambda=seq(-1,1))
+lambda=bc$x[which.max(bc$y)]
+lambda
+```
+lambda is -.31313131
+```{r}
+p1=Price^(lambda)
+mod.finalupdated=lm(p1 ~ Sq_feet + Quality + Style + Year + Lot + 
+    Sq_feet:Quality)
+s=summary(mod.finalupdated)
+s$adj.r.squared
+yhat=fitted(mod.finalupdated)
+e=yhat-Price
+
+plot(yhat, e, xlab = 'Fitted Value', ylab = 'Residuals', main = 'Residuals vs Fitted Value')
+abline(h = 0, lty = 2)
+
+qqnorm(e)
+qqline(e)
+
+```  
 
 
+```{r}
 
+```
+  
