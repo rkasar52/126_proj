@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 dat = read.table('realestate.txt', header = T)
-head(dat)
+tail(dat)
 
 Price=dat$SalePrice
 Sq_feet=dat$SqFeet
@@ -25,7 +25,7 @@ Pool=dat$Pool
 Year=dat$Year
 Q=dat$Quality
 Quality=factor(Q)
-Style=dat$Style
+Style=factor(dat$Style)
 Lot=dat$Lot
 Highway=dat$Highway
 
@@ -94,14 +94,40 @@ AIC test shows that SQ_feet, quality, style, year, lot, garage, beds, highway, a
 
 
 ```{r}
-mod.AIC = lm(formula = Price ~ Sq_feet + Quality + Style + Year + Lot + 
-    Garage + Beds + Highway + AC)
-summary(mod.AIC)
 
+
+mod.AIC = lm(formula = Price ~ Sq_feet + Quality + Style + Year + Lot )
+s=summary(mod.AIC)
+s
 
 ```
 All Beta values are significant except for Highway and AC as their pval are large.
 Conduct BIC test to see if similar results
+
+```{r}
+betas = s$coefficients
+#black line
+yhatq1=100+betas[2]*Sq_feet[Quality==1]
+#red line
+yhatq2=100+betas[2]*Sq_feet[Quality==2]+betas[3]
+#green line
+yhatq3=100+betas[2]*Sq_feet[Quality==3]+betas[4]
+plot(Sq_feet,Price,xlab='sqfeet',ylab='price',main='graph with quality')
+points(Sq_feet[Quality==2],Price[Quality==2],col = 2)
+points(Sq_feet[Quality==3],Price[Quality==3],col = 3)
+
+lines(Sq_feet[Quality==1],yhatq1,col=1)
+lines(Sq_feet[Quality==2],yhatq2,col=2)
+lines(Sq_feet[Quality==3],yhatq3,col=3)
+
+legend('topleft', bty='n',pch=20,col=c(1,2,3),c('quality1','quality2','quality3'),lty = c(1,1,1))
+```
+
+```{r}
+pricefit = lm(Price~Sq_feet)
+summary(pricefit)
+```
+
 
 ```{r}
 n = nrow(dat)
